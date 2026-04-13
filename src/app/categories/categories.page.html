@@ -37,30 +37,12 @@
           </ion-list-header>
 
           <ion-item-sliding *ngFor="let c of (categories$ | async); trackBy: trackById">
-            <ion-item>
-              <ng-container *ngIf="editingId === c.id; else viewMode">
-                <ion-input
-                  [(ngModel)]="editingName"
-                  (keyup.enter)="saveEdit()"
-                  fill="outline"></ion-input>
-                <ion-buttons slot="end">
-                  <ion-button color="success" (click)="saveEdit()">
-                    <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
-                  </ion-button>
-                  <ion-button color="medium" (click)="cancelEdit()">
-                    <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-              </ng-container>
-              <ng-template #viewMode>
-                <ion-icon slot="start" name="pricetag-outline" color="tertiary"></ion-icon>
-                <ion-label>{{ c.name }}</ion-label>
-              </ng-template>
+            <ion-item button="true" (click)="startEdit(c)">
+              <ion-icon slot="start" name="pricetag-outline" color="tertiary"></ion-icon>
+              <ion-label>{{ c.name }}</ion-label>
+              <ion-icon slot="end" name="create-outline" color="medium"></ion-icon>
             </ion-item>
             <ion-item-options side="end">
-              <ion-item-option color="primary" (click)="startEdit(c)">
-                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-              </ion-item-option>
               <ion-item-option color="danger" (click)="remove(c.id)">
                 <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
               </ion-item-option>
