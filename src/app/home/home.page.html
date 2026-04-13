@@ -2,51 +2,115 @@
   <ion-toolbar color="primary">
     <ion-title>Mis tareas</ion-title>
     <ion-buttons slot="end">
-      <ion-button *ngIf="rc.getFlag('categoriesEnabled')" routerLink="/categories">Categorías</ion-button>
+      <ion-button *ngIf="rc.getFlag('categoriesEnabled')" routerLink="/categories">
+        <ion-icon slot="start" name="pricetags-outline"></ion-icon>
+        Categorías
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-item lines="full">
-    <ion-input placeholder="Nueva tarea" [(ngModel)]="title" (keyup.enter)="addTask()"></ion-input>
-    <ion-select
-      *ngIf="rc.getFlag('categoriesEnabled')"
-      slot="end"
-      placeholder="Categoría"
-      [(ngModel)]="newCategoryId"
-      interface="popover">
-      <ion-select-option [value]="null">Sin categoría</ion-select-option>
-      <ion-select-option *ngFor="let c of (categories$ | async)" [value]="c.id">{{ c.name }}</ion-select-option>
-    </ion-select>
-    <ion-button slot="end" (click)="addTask()">Agregar</ion-button>
-  </ion-item>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-grid fixed>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="12" size-md="10" size-lg="8" size-xl="6">
 
-  <ion-item *ngIf="rc.getFlag('categoriesEnabled')" lines="full">
-    <ion-label>Filtrar</ion-label>
-    <ion-select [ngModel]="filter$ | async" (ngModelChange)="onFilterChange($event)" interface="popover">
-      <ion-select-option [value]="null">Todas</ion-select-option>
-      <ion-select-option *ngFor="let c of (categories$ | async)" [value]="c.id">{{ c.name }}</ion-select-option>
-    </ion-select>
-  </ion-item>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Nueva tarea</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-input
+                placeholder="¿Qué hay que hacer?"
+                [(ngModel)]="title"
+                (keyup.enter)="addTask()"
+                fill="outline"></ion-input>
+            </ion-item>
+            <ion-item *ngIf="rc.getFlag('categoriesEnabled')" lines="none">
+              <ion-select
+                label="Categoría"
+                labelPlacement="stacked"
+                placeholder="Sin categoría"
+                [(ngModel)]="newCategoryId"
+                interface="popover"
+                fill="outline">
+                <ion-select-option [value]="null">Sin categoría</ion-select-option>
+                <ion-select-option *ngFor="let c of (categories$ | async)" [value]="c.id">{{ c.name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-button expand="block" (click)="addTask()">
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Agregar
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
 
-  <ng-container *ngIf="view$ | async as v">
-    <ion-list *ngIf="v.tasks.length > 0; else empty">
-      <ion-item *ngFor="let t of v.tasks; trackBy: trackById">
-        <ion-checkbox slot="start" [checked]="t.done" (ionChange)="toggle(t.id)"></ion-checkbox>
-        <ion-label [class.done]="t.done">
-          <h2>{{ t.title }}</h2>
-          <p *ngIf="rc.getFlag('categoriesEnabled') && t.categoryId">{{ categoryName(t.categoryId, v.categories) }}</p>
-        </ion-label>
-        <ion-button slot="end" fill="clear" color="danger" (click)="remove(t.id)">Borrar</ion-button>
-      </ion-item>
-    </ion-list>
+        <ion-segment
+          *ngIf="rc.getFlag('categoriesEnabled')"
+          [value]="(filter$ | async) ?? 'all'"
+          (ionChange)="onFilterChange($any($event.detail.value) === 'all' ? null : $any($event.detail.value))"
+          scrollable>
+          <ion-segment-button value="all">
+            <ion-label>Todas</ion-label>
+          </ion-segment-button>
+          <ion-segment-button *ngFor="let c of (categories$ | async)" [value]="c.id">
+            <ion-label>{{ c.name }}</ion-label>
+          </ion-segment-button>
+        </ion-segment>
 
-    <ng-template #empty>
-      <div class="empty">
-        <p>No hay tareas todavía.</p>
-        <ion-button size="small" fill="outline" (click)="seed()">Cargar 1000 de prueba</ion-button>
-      </div>
-    </ng-template>
-  </ng-container>
+        <ng-container *ngIf="view$ | async as v">
+          <ion-list *ngIf="v.tasks.length > 0; else empty" inset="true">
+            <ion-list-header>
+              <ion-label>Pendientes</ion-label>
+              <ion-note slot="end">{{ v.tasks.length }}</ion-note>
+            </ion-list-header>
+
+            <ion-item-sliding *ngFor="let t of v.tasks; trackBy: trackById">
+              <ion-item>
+                <ion-checkbox
+                  slot="start"
+                  [checked]="t.done"
+                  (ionChange)="toggle(t.id)"
+                  labelPlacement="end">
+                  <ion-label>
+                    <h2>{{ t.title }}</h2>
+                    <ion-badge
+                      *ngIf="rc.getFlag('categoriesEnabled') && t.categoryId"
+                      color="tertiary">
+                      {{ categoryName(t.categoryId, v.categories) }}
+                    </ion-badge>
+                  </ion-label>
+                </ion-checkbox>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="remove(t.id)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          </ion-list>
+
+          <ng-template #empty>
+            <ion-card>
+              <ion-card-content class="ion-text-center">
+                <ion-icon name="checkmark-done-circle-outline" size="large" color="medium"></ion-icon>
+                <p>No hay tareas todavía.</p>
+                <ion-button size="small" fill="outline" (click)="seed()">
+                  Cargar 1000 de prueba
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ng-template>
+        </ng-container>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-title size="small" class="ion-text-center">Prueba técnica</ion-title>
+  </ion-toolbar>
+</ion-footer>

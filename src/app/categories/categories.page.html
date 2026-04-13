@@ -7,24 +7,83 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-item>
-    <ion-input placeholder="Nombre de la categoría" [(ngModel)]="name" (keyup.enter)="addCategory()"></ion-input>
-    <ion-button slot="end" (click)="addCategory()">Agregar</ion-button>
-  </ion-item>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-grid fixed>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="12" size-md="10" size-lg="8" size-xl="6">
 
-  <ion-list>
-    <ion-item *ngFor="let c of (categories$ | async); trackBy: trackById">
-      <ng-container *ngIf="editingId === c.id; else viewMode">
-        <ion-input [(ngModel)]="editingName" (keyup.enter)="saveEdit()"></ion-input>
-        <ion-button slot="end" fill="clear" (click)="saveEdit()">Guardar</ion-button>
-        <ion-button slot="end" fill="clear" color="medium" (click)="cancelEdit()">Cancelar</ion-button>
-      </ng-container>
-      <ng-template #viewMode>
-        <ion-label>{{ c.name }}</ion-label>
-        <ion-button slot="end" fill="clear" (click)="startEdit(c)">Editar</ion-button>
-        <ion-button slot="end" fill="clear" color="danger" (click)="remove(c.id)">Borrar</ion-button>
-      </ng-template>
-    </ion-item>
-  </ion-list>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Nueva categoría</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-input
+                placeholder="Nombre"
+                [(ngModel)]="name"
+                (keyup.enter)="addCategory()"
+                fill="outline"></ion-input>
+            </ion-item>
+            <ion-button expand="block" (click)="addCategory()">
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Agregar
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-list inset="true" *ngIf="(categories$ | async)?.length; else empty">
+          <ion-list-header>
+            <ion-label>Mis categorías</ion-label>
+          </ion-list-header>
+
+          <ion-item-sliding *ngFor="let c of (categories$ | async); trackBy: trackById">
+            <ion-item>
+              <ng-container *ngIf="editingId === c.id; else viewMode">
+                <ion-input
+                  [(ngModel)]="editingName"
+                  (keyup.enter)="saveEdit()"
+                  fill="outline"></ion-input>
+                <ion-buttons slot="end">
+                  <ion-button color="success" (click)="saveEdit()">
+                    <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+                  </ion-button>
+                  <ion-button color="medium" (click)="cancelEdit()">
+                    <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ng-container>
+              <ng-template #viewMode>
+                <ion-icon slot="start" name="pricetag-outline" color="tertiary"></ion-icon>
+                <ion-label>{{ c.name }}</ion-label>
+              </ng-template>
+            </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option color="primary" (click)="startEdit(c)">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-item-option>
+              <ion-item-option color="danger" (click)="remove(c.id)">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+
+        <ng-template #empty>
+          <ion-card>
+            <ion-card-content class="ion-text-center">
+              <ion-icon name="pricetags-outline" size="large" color="medium"></ion-icon>
+              <p>Todavía no tenés categorías.</p>
+            </ion-card-content>
+          </ion-card>
+        </ng-template>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-title size="small" class="ion-text-center">Prueba técnica</ion-title>
+  </ion-toolbar>
+</ion-footer>
